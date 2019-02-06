@@ -1,0 +1,88 @@
+<svg viewBox="0 0 1 {1/settings.aspectRatio}" preserveAspectRatio="none" class="chart">
+  {#if settings.showClose}
+    <path d="{ getPathCommands(chart, x => x.close, settings.aspectRatio) }" stroke={settings.closeColor} />
+  {/if}
+  {#if settings.showVolume}
+    <path d="{ getPathCommands(chart, x => x.volume, settings.aspectRatio) }" stroke={settings.volumeColor} />
+  {/if}
+  {#if settings.showChange}
+    <path d="{ getPathCommands(chart, x => x.change, settings.aspectRatio) }" stroke={settings.changeColor} />
+  {/if}
+  {#if settings.showHigh}
+    <path d="{ getPathCommands(chart, x => x.high, settings.aspectRatio) }" stroke={settings.highColor} />
+  {/if}
+  {#if settings.showLow}
+    <path d="{ getPathCommands(chart, x => x.low, settings.aspectRatio) }" stroke={settings.lowColor} />
+  {/if}
+  {#if settings.showNotional}
+    <path d="{ getPathCommands(chart, x => x.notional, settings.aspectRatio) }" stroke={settings.notionalColor} />
+  {/if}
+  {#if settings.showAverage}
+    <path d="{ getPathCommands(chart, x => x.average, settings.aspectRatio) }" stroke={settings.averageColor} />
+  {/if}
+  {#if settings.showNumberOfTrades}
+    <path d="{ getPathCommands(chart, x => x.numberOfTrades, settings.aspectRatio) }" stroke={settings.numberOfTradesColor} />
+  {/if}
+  {#if settings.showMarketHigh}
+    <path d="{ getPathCommands(chart, x => x.marketHigh, settings.aspectRatio) }" stroke={settings.marketHighColor} />
+  {/if}
+  {#if settings.showMarketLow}
+    <path d="{ getPathCommands(chart, x => x.marketLow, settings.aspectRatio) }" stroke={settings.marketLowColor} />
+  {/if}
+  {#if settings.showMarketAverage}
+    <path d="{ getPathCommands(chart, x => x.marketAverage, settings.aspectRatio) }" stroke={settings.marketAverageColor} />
+  {/if}
+</svg>
+
+<style>
+  path {
+    fill: none;
+    stroke-width: 0.002;
+  }
+</style>
+
+<script>
+  export default {
+    data() {
+      return {
+        settings: {},
+        getPathCommands(chart, feature, aspectRatio) {
+          if (chart.length == 0) return '';
+          if (chart.hasOwnProperty('data')) chart = chart.data; // For range=dynamic
+
+          var time;
+          if (chart[0].hasOwnProperty('minute')) {
+            var time = chart.map(x => x.minute.split(':')[0]*60+x.minute.split(':')[1]*1);
+          } else if (chart[0].hasOwnProperty('date')) {
+            var time = chart.map(x => Date.parse(x.date));
+          } else {
+            return '';
+          }
+          var values = chart.map(feature);
+
+          if (time.length == 0 || values.length == 0) return '';
+
+          let minTime = Math.min.apply(Math, time);
+          let spanTime = Math.max.apply(Math, time) - minTime;
+          let filteredValues = values.filter(x => x > 0)
+          let minValues = Math.min.apply(Math, filteredValues);
+          let spanValues = Math.max.apply(Math, filteredValues) - minValues;
+
+          if (spanTime == 0 || spanValues == 0) return '';
+
+          time = time.map(x => (x-minTime)/spanTime);
+          values = values.map(x => (x-minValues)/spanValues/aspectRatio);
+
+          var command = '';
+          for (var i = 0; i < time.length; i++) {
+            if (values[i] > 0) {
+              let prefix = command.length == 0 ? 'M ' : 'L '
+              command += prefix + time[i]+' '+values[i];
+            }
+          }
+          return command;
+        }
+      };
+    }
+  };
+</script>

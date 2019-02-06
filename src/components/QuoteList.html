@@ -1,0 +1,166 @@
+{#if symbols.length > 0}
+  <div class="settings">
+    <div>
+      <label for="quoteRange">Quote Range</label>
+      <select id="quoteRange" bind:value=quoteRange on:change="refreshQuotes()">
+        <option value="1d">1d</option>
+        <option value="1m">1m</option>
+        <option value="3m">3m</option>
+        <option value="6m">6m</option>
+        <option value="ytd">ytd</option>
+        <option value="1y">1y</option>
+        <option value="2y">2y</option>
+        <option value="5y">5y</option>
+        <option value="dynamic">dynamic</option>
+        <!-- <option value="date">date</option> -->
+      </select>
+    </div>
+    <!-- <div>
+      <label for="closeColor">Close Color</label>
+      <input type="text" id="closeColor" bind:value=chartSettings.closeColor />
+    </div>
+    </div> -->
+    <div>
+      <input type="checkbox" id="showChange" bind:checked=chartSettings.showChange />
+      <label for="showChange">Show Change</label>
+    </div>
+    <div>
+      <input type="checkbox" id="showClose" bind:checked=chartSettings.showClose />
+      <label for="showClose">Show Close</label>
+    </div>
+    <div>
+      <input type="checkbox" id="showVolume" bind:checked=chartSettings.showVolume />
+      <label for="showVolume">Show Volume</label>
+    </div>
+    <div>
+      <input type="checkbox" id="showHigh" bind:checked=chartSettings.showHigh />
+      <label for="showHigh">Show High</label>
+    </div>
+    <div>
+      <input type="checkbox" id="showLow" bind:checked=chartSettings.showLow />
+      <label for="showLow">Show Low</label>
+    </div>
+    {#if quoteRange=='1d' || quoteRange=='dynamic'}
+      <div>
+        <input type="checkbox" id="showMarketHigh" bind:checked=chartSettings.showMarketHigh />
+        <label for="showMarketHigh">Show Market High</label>
+      </div>
+      <div>
+        <input type="checkbox" id="showMarketLow" bind:checked=chartSettings.showMarketLow />
+        <label for="showMarketLow">Show Market Low</label>
+      </div>
+      <div>
+        <input type="checkbox" id="showMarketAverage" bind:checked=chartSettings.showMarketAverage />
+        <label for="showMarketAverage">Show Market Average</label>
+      </div>
+      <div>
+        <input type="checkbox" id="showNotional" bind:checked=chartSettings.showNotional />
+        <label for="showNotional">Show Notional</label>
+      </div>
+      <div>
+        <input type="checkbox" id="showAverage" bind:checked=chartSettings.showAverage />
+        <label for="showAverage">Show Average</label>
+      </div>
+      <div>
+        <input type="checkbox" id="showNumberOfTrades" bind:checked=chartSettings.showNumberOfTrades />
+        <label for="showNumberOfTrades">Show Number Of Trades</label>
+      </div>
+    {/if}
+  </div>
+
+  {#if quotes}
+    {#each Object.values(quotes) as data}
+      <!--{@debug data}--->
+      <div class="item">
+        <Quote quote={data.quote} />
+        <Chart chart={data.chart} bind:settings=chartSettings />
+      </div>
+    {/each}
+  {:else}
+    <div class="loading">Loading...</div>
+  {/if}
+  <button on:click='refreshQuotes()'>Refresh</button>
+{:else}
+  <div class="error">
+    No symbols to display
+  </div>
+{/if}
+
+
+<style>
+  .item, .settings {
+    background: #efefef;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  input, label {
+    display: inline;
+  }
+</style>
+
+
+<script>
+	import fetchQuotes from '../utils/fetchQuotes.js';
+
+	export default {
+    oncreate() {
+      const { symbols, quoteRange } = this.get();
+      fetchQuotes(symbols, quoteRange, this);
+    },
+    methods: {
+      // setQuoteStateLoading() {
+      //     let { quotes } = this.get();
+      //     let resetQuotes = Object.values(quotes).map(data => {
+      //       data.quote = undefined;
+      //       data.chart = undefined;
+      //     });
+      //     this.set({ quotes: resetQuotes });
+      // },
+      refreshQuotes() {
+        // this.setQuoteStateLoading();
+        const { symbols, quoteRange } = this.get();
+        fetchQuotes(symbols, quoteRange, this);
+      }
+    },
+    data() {
+      return {
+        symbols: {},
+        quoteRange: '1d',
+        chartSettings: {
+            aspectRatio: 8.0/1.0,
+            showClose: true,
+            showVolume: false,
+            showChange: false,
+            showHigh: false,
+            showLow: false,
+            showMarketHigh: false,
+            showMarketLow: false,
+            showMarketAverage: true,
+            showNotional: false,
+            showAverage: false,
+            showNumberOfTrades: false,
+            closeColor: '#07d',
+            volumeColor: '#3d0',
+            changeColor: '#03d',
+            highColor: '#70d',
+            lowColor: '#d70',
+            marketHighColor: '#d07',
+            marketLowColor: '#7d0',
+            marketAverageColor: '#d00',
+            notionalColor: '#0dd',
+            averageColor: '#333',
+            numberOfTradesColor: '#d0d'
+        },
+        quotes: undefined
+      };
+    },
+		components: {
+      Quote: './Quote.html',
+      Chart: './Chart.html'
+		}
+	};
+</script>

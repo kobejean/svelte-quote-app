@@ -1,0 +1,13 @@
+<div id="app">
+  <h1>Quotes</h1>
+	<p>{#each symbols as symbol}<span>{symbol}</span>, {/each}</p>
+  <QuoteList {symbols}/>
+</div>
+
+<script>
+	export default {
+		components: {
+      QuoteList: './QuoteList.html'
+		}
+	};
+</script>
