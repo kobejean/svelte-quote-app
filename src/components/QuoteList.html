@@ -20,60 +20,19 @@
       <input type="text" id="closeColor" bind:value=chartSettings.closeColor />
     </div>
     </div> -->
-    <div>
-      <input type="checkbox" id="showChange" bind:checked=chartSettings.showChange />
-      <label for="showChange">Show Change</label>
-    </div>
-    <div>
-      <input type="checkbox" id="showClose" bind:checked=chartSettings.showClose />
-      <label for="showClose">Show Close</label>
-    </div>
-    <div>
-      <input type="checkbox" id="showVolume" bind:checked=chartSettings.showVolume />
-      <label for="showVolume">Show Volume</label>
-    </div>
-    <div>
-      <input type="checkbox" id="showHigh" bind:checked=chartSettings.showHigh />
-      <label for="showHigh">Show High</label>
-    </div>
-    <div>
-      <input type="checkbox" id="showLow" bind:checked=chartSettings.showLow />
-      <label for="showLow">Show Low</label>
-    </div>
-    {#if quoteRange=='1d' || quoteRange=='dynamic'}
+    {#each Object.values(chartSettings.fields) as field}
       <div>
-        <input type="checkbox" id="showMarketHigh" bind:checked=chartSettings.showMarketHigh />
-        <label for="showMarketHigh">Show Market High</label>
+        <input type="checkbox" id={field.property} bind:checked=field.enabled />
+        <label for={field.property} style="color: {field.color};">{field.property}</label>
       </div>
-      <div>
-        <input type="checkbox" id="showMarketLow" bind:checked=chartSettings.showMarketLow />
-        <label for="showMarketLow">Show Market Low</label>
-      </div>
-      <div>
-        <input type="checkbox" id="showMarketAverage" bind:checked=chartSettings.showMarketAverage />
-        <label for="showMarketAverage">Show Market Average</label>
-      </div>
-      <div>
-        <input type="checkbox" id="showNotional" bind:checked=chartSettings.showNotional />
-        <label for="showNotional">Show Notional</label>
-      </div>
-      <div>
-        <input type="checkbox" id="showAverage" bind:checked=chartSettings.showAverage />
-        <label for="showAverage">Show Average</label>
-      </div>
-      <div>
-        <input type="checkbox" id="showNumberOfTrades" bind:checked=chartSettings.showNumberOfTrades />
-        <label for="showNumberOfTrades">Show Number Of Trades</label>
-      </div>
-    {/if}
+    {/each}
   </div>
 
   {#if quotes}
     {#each Object.values(quotes) as data}
-      <!--{@debug data}--->
       <div class="item">
-        <Quote quote={data.quote} />
-        <Chart chart={data.chart} bind:settings=chartSettings />
+        <Quote quote={data.quote} {isRefreshing} />
+        <Chart chart={data.chart} bind:settings=chartSettings {isRefreshing} />
       </div>
     {/each}
   {:else}
@@ -109,51 +68,104 @@
 	export default {
     oncreate() {
       const { symbols, quoteRange } = this.get();
-      fetchQuotes(symbols, quoteRange, this);
+      fetchQuotes(symbols, quoteRange, this, null);
     },
     methods: {
-      // setQuoteStateLoading() {
-      //     let { quotes } = this.get();
-      //     let resetQuotes = Object.values(quotes).map(data => {
-      //       data.quote = undefined;
-      //       data.chart = undefined;
-      //     });
-      //     this.set({ quotes: resetQuotes });
-      // },
+      setQuoteStateLoading() {
+          let { quotes } = this.get();
+
+          let resetQuotes = Object.values(quotes).map(data => {
+            if (!data.hasOwnProperty('quote') || !data.hasOwnProperty('chart')) return data;
+            for (var property in data.quote) {
+              if (data.quote.hasOwnProperty(property)) {
+                data.quote[property] = undefined
+              }
+            }
+            for (var property in data.chart) {
+              if (data.chart.hasOwnProperty(property)) {
+                data.chart[property] = undefined
+              }
+            }
+            return data;
+          });
+
+          this.set({ quotes: resetQuotes, isRefreshing: true });
+      },
       refreshQuotes() {
-        // this.setQuoteStateLoading();
+        this.setQuoteStateLoading();
         const { symbols, quoteRange } = this.get();
-        fetchQuotes(symbols, quoteRange, this);
+
+        function fetchQuotesCallback(component) {
+          component.set({ isRefreshing: false });
+        }
+
+        fetchQuotes(symbols, quoteRange, this, fetchQuotesCallback);
       }
     },
     data() {
       return {
-        symbols: {},
+        symbols: [],
         quoteRange: '1d',
+        isRefreshing: false,
         chartSettings: {
-            aspectRatio: 8.0/1.0,
-            showClose: true,
-            showVolume: false,
-            showChange: false,
-            showHigh: false,
-            showLow: false,
-            showMarketHigh: false,
-            showMarketLow: false,
-            showMarketAverage: true,
-            showNotional: false,
-            showAverage: false,
-            showNumberOfTrades: false,
-            closeColor: '#07d',
-            volumeColor: '#3d0',
-            changeColor: '#03d',
-            highColor: '#70d',
-            lowColor: '#d70',
-            marketHighColor: '#d07',
-            marketLowColor: '#7d0',
-            marketAverageColor: '#d00',
-            notionalColor: '#0dd',
-            averageColor: '#333',
-            numberOfTradesColor: '#d0d'
+          aspectRatio: 8.0/1.0,
+          fields: [
+            {
+              property: 'close',
+              enabled: true,
+              color: '#07d'
+            },
+            {
+              property: 'volume',
+              enabled: false,
+              color: '#3d0'
+            },
+            {
+              property: 'change',
+              enabled: false,
+              color: '#03d'
+            },
+            {
+              property: 'high',
+              enabled: true,
+              color: '#70d'
+            },
+            {
+              property: 'low',
+              enabled: true,
+              color: '#d70'
+            },
+            {
+              property: 'marketHigh',
+              enabled: true,
+              color: '#d07'
+            },
+            {
+              property: 'marketLow',
+              enabled: true,
+              color: '#7d0'
+            },
+            {
+              property: 'marketAverage',
+              enabled: true,
+              color: '#d00'
+            },
+            {
+              property: 'notional',
+              enabled: false,
+              color: '#0dd'
+            },
+            {
+              property: 'average',
+              enabled: false,
+              color: '#333'
+            },
+            {
+              property: 'numberOfTrades',
+              enabled: false,
+              color: '#d0d'
+            }
+          ]
         },
         quotes: undefined
       };

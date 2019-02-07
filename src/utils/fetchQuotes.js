@@ -1,5 +1,5 @@
 // async data fetching function
-const fetchQuotes = async (symbols, range, component) => {
+const fetchQuotes = async (symbols, range, component, callback) => {
   if (symbols.length == 0) return;
 
   let symbolsQuery = symbols.map(x => x.toLowerCase()).join(',');
@@ -7,6 +7,8 @@ const fetchQuotes = async (symbols, range, component) => {
   const response = await fetch(url);
   const json = await response.json();
   component.set({ quotes: json });
+
+  if (callback) callback(component);
 };
 
 export default fetchQuotes;

@@ -1,37 +1,9 @@
 <svg viewBox="0 0 1 {1/settings.aspectRatio}" preserveAspectRatio="none" class="chart">
-  {#if settings.showClose}
-    <path d="{ getPathCommands(chart, x => x.close, settings.aspectRatio) }" stroke={settings.closeColor} />
-  {/if}
-  {#if settings.showVolume}
-    <path d="{ getPathCommands(chart, x => x.volume, settings.aspectRatio) }" stroke={settings.volumeColor} />
-  {/if}
-  {#if settings.showChange}
-    <path d="{ getPathCommands(chart, x => x.change, settings.aspectRatio) }" stroke={settings.changeColor} />
-  {/if}
-  {#if settings.showHigh}
-    <path d="{ getPathCommands(chart, x => x.high, settings.aspectRatio) }" stroke={settings.highColor} />
-  {/if}
-  {#if settings.showLow}
-    <path d="{ getPathCommands(chart, x => x.low, settings.aspectRatio) }" stroke={settings.lowColor} />
-  {/if}
-  {#if settings.showNotional}
-    <path d="{ getPathCommands(chart, x => x.notional, settings.aspectRatio) }" stroke={settings.notionalColor} />
-  {/if}
-  {#if settings.showAverage}
-    <path d="{ getPathCommands(chart, x => x.average, settings.aspectRatio) }" stroke={settings.averageColor} />
-  {/if}
-  {#if settings.showNumberOfTrades}
-    <path d="{ getPathCommands(chart, x => x.numberOfTrades, settings.aspectRatio) }" stroke={settings.numberOfTradesColor} />
-  {/if}
-  {#if settings.showMarketHigh}
-    <path d="{ getPathCommands(chart, x => x.marketHigh, settings.aspectRatio) }" stroke={settings.marketHighColor} />
-  {/if}
-  {#if settings.showMarketLow}
-    <path d="{ getPathCommands(chart, x => x.marketLow, settings.aspectRatio) }" stroke={settings.marketLowColor} />
-  {/if}
-  {#if settings.showMarketAverage}
-    <path d="{ getPathCommands(chart, x => x.marketAverage, settings.aspectRatio) }" stroke={settings.marketAverageColor} />
-  {/if}
+  {#each Object.values(settings.fields) as field}
+    {#if field.enabled}
+      <path d="{ getPathCommands(chart, field.property, settings.aspectRatio) }" stroke={field.color} />
+    {/if}
+  {/each}
 </svg>
 
 <style>
@@ -46,8 +18,8 @@
     data() {
       return {
         settings: {},
-        getPathCommands(chart, feature, aspectRatio) {
-          if (chart.length == 0) return '';
+        getPathCommands(chart, property, aspectRatio) {
+          if (chart.length == 0 || chart[0] == undefined) return '';
           if (chart.hasOwnProperty('data')) chart = chart.data; // For range=dynamic
 
           var time;
@@ -58,7 +30,7 @@
           } else {
             return '';
           }
-          var values = chart.map(feature);
+          var values = chart.map(data => data[property]);
 
           if (time.length == 0 || values.length == 0) return '';
 

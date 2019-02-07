@@ -1,9 +1,27 @@
 <div class="quote">
-  <div>Company: {quote.companyName}</div>
-  <div>Symbol: {quote.symbol}</div>
-  <div>Latest Source: {quote.latestSource}</div>
-  <div>Latest Time: {quote.latestTime}</div>
-  <div>Sector: {quote.sector}</div>
-  <div>Latest Price: {quote.latestPrice}</div>
-  <div>Close: {quote.close}</div>
+  <div>Company: { makeLabelText(quote.companyName, isRefreshing) }</div>
+  <div>Symbol: { makeLabelText(quote.symbol, isRefreshing) }</div>
+  <div>Latest Source: { makeLabelText(quote.latestSource, isRefreshing) }</div>
+  <div>Latest Time: { makeLabelText(quote.latestTime, isRefreshing) }</div>
+  <div>Sector: { makeLabelText(quote.sector, isRefreshing) }</div>
+  <div>Latest Price: { makeLabelText(quote.latestPrice, isRefreshing) }</div>
+  <div>Close: { makeLabelText(quote.close, isRefreshing) }</div>
 </div>
+
+<script>
+  export default {
+    data() {
+      return {
+        makeLabelText(labelText, isRefreshing) {
+          if (isRefreshing) {
+            return 'refreshing...';
+          } else if (labelText) {
+            return labelText;
+          } else {
+            return 'N/A';
+          }
+        }
+      }
+    }
+  }
+</script>
