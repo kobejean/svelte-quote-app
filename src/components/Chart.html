@@ -19,8 +19,8 @@
       return {
         settings: {},
         getPathCommands(chart, property, aspectRatio) {
-          if (chart.length == 0 || chart[0] == undefined) return '';
           if (chart.hasOwnProperty('data')) chart = chart.data; // For range=dynamic
+          if (chart.length == 0 || chart[0] == undefined) return '';
 
           var time;
           if (chart[0].hasOwnProperty('minute')) {

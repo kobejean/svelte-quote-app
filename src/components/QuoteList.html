@@ -15,15 +15,11 @@
         <!-- <option value="date">date</option> -->
       </select>
     </div>
-    <!-- <div>
-      <label for="closeColor">Close Color</label>
-      <input type="text" id="closeColor" bind:value=chartSettings.closeColor />
-    </div>
-    </div> -->
     {#each Object.values(chartSettings.fields) as field}
       <div>
         <input type="checkbox" id={field.property} bind:checked=field.enabled />
         <label for={field.property} style="color: {field.color};">{field.property}</label>
+        <input type="text" id={field.color} bind:value=field.color />
       </div>
     {/each}
   </div>
@@ -40,9 +36,7 @@
   {/if}
   <button on:click='refreshQuotes()'>Refresh</button>
 {:else}
-  <div class="error">
-    No symbols to display
-  </div>
+  <div class="error"> No symbols to display </div>
 {/if}
 
 
@@ -63,7 +57,8 @@
 
 
 <script>
-	import fetchQuotes from '../utils/fetchQuotes.js';
+  import fetchQuotes from '../utils/fetchQuotes.js';
+	import chartSettings from '../utils/chartSettings.js';
 
 	export default {
     oncreate() {
@@ -76,16 +71,23 @@
 
           let resetQuotes = Object.values(quotes).map(data => {
             if (!data.hasOwnProperty('quote') || !data.hasOwnProperty('chart')) return data;
-            for (var property in data.quote) {
-              if (data.quote.hasOwnProperty(property)) {
-                data.quote[property] = undefined
+            
+            var chart = data.chart;
+            var quote = data.quote;
+            if (chart.hasOwnProperty('data')) chart = chart.data; // For range=dynamic
+
+            for (var property in quote) {
+              if (quote.hasOwnProperty(property)) {
+                quote[property] = undefined
               }
             }
-            for (var property in data.chart) {
-              if (data.chart.hasOwnProperty(property)) {
-                data.chart[property] = undefined
+            for (var property in chart) {
+              if (chart.hasOwnProperty(property)) {
+                chart[property] = undefined
               }
             }
+            data.quote = quote;
+            data.chart = chart;
             return data;
           });
 
@@ -107,66 +109,7 @@
         symbols: [],
         quoteRange: '1d',
         isRefreshing: false,
-        chartSettings: {
-          aspectRatio: 8.0/1.0,
-          fields: [
-            {
-              property: 'close',
-              enabled: true,
-              color: '#07d'
-            },
-            {
-              property: 'volume',
-              enabled: false,
-              color: '#3d0'
-            },
-            {
-              property: 'change',
-              enabled: false,
-              color: '#03d'
-            },
-            {
-              property: 'high',
-              enabled: true,
-              color: '#70d'
-            },
-            {
-              property: 'low',
-              enabled: true,
-              color: '#d70'
-            },
-            {
-              property: 'marketHigh',
-              enabled: true,
-              color: '#d07'
-            },
-            {
-              property: 'marketLow',
-              enabled: true,
-              color: '#7d0'
-            },
-            {
-              property: 'marketAverage',
-              enabled: true,
-              color: '#d00'
-            },
-            {
-              property: 'notional',
-              enabled: false,
-              color: '#0dd'
-            },
-            {
-              property: 'average',
-              enabled: false,
-              color: '#333'
-            },
-            {
-              property: 'numberOfTrades',
-              enabled: false,
-              color: '#d0d'
-            }
-          ]
-        },
+        chartSettings: chartSettings,
         quotes: undefined
       };
     },
